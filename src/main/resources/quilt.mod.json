@@ -1,0 +1,40 @@
+{
+	"schema_version": 1,
+	"quilt_loader": {
+		"group": "cn.magicst.mcaddition",
+		"id": "mcaddition",
+		"version": "${version}",
+		"metadata": {
+			"name": "mcaddition",
+			"description": "Add some things for minecraft.",
+			"contributors": {
+				"Your name here": "Magicst_Magoo"
+			},
+			"contact": {
+				"homepage": "https://github.com/MagicstMagoo/mcaddition",
+				"issues": "https://github.com/MagicstMagoo/mcaddition/issues",
+				"sources": "https://github.com/MagicstMagoo/mcaddition"
+			},
+			"icon": "assets/icon.png"
+		},
+		"intermediate_mappings": "net.fabricmc:intermediary",
+		"entrypoints": {
+			"init": "cn.magicst.mcaddition.ExampleMod"
+		},
+		"depends": [
+			{
+				"id": "quilt_loader",
+				"versions": ">=0.17.0-"
+			},
+			{
+				"id": "quilted_fabric_api",
+				"versions": ">=4.0.0-"
+			},
+			{
+				"id": "minecraft",
+				"versions": ">=1.19.2"
+			}
+		]
+	},
+	"mixin": "example_mod.mixins.json"
+}
