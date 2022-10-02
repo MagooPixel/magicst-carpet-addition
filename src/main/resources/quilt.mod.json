@@ -19,7 +19,7 @@
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"init": "cn.magicst.mcaddition.ExampleMod"
+			"init": "cn.magicst.mcaddition.VectorFish"
 		},
 		"depends": [
 			{
