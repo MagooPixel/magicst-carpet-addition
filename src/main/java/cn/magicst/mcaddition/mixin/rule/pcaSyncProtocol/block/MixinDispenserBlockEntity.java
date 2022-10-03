@@ -1,8 +1,8 @@
 package cn.magicst.mcaddition.mixin.rule.pcaSyncProtocol.block;
 
-import cn.magicst.carpet.ModInfo;
-import cn.magicst.carpet.PcaSettings;
-import cn.magicst.carpet.network.PcaSyncProtocol;
+import cn.magicst.mcaddition.Main;
+import cn.magicst.mcaddition.PcaSettings;
+import cn.magicst.mcaddition.network.PcaSyncProtocol;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.DispenserBlockEntity;
@@ -21,7 +21,7 @@ public abstract class MixinDispenserBlockEntity extends LootableContainerBlockEn
     public void markDirty() {
         super.markDirty();
         if (PcaSettings.pcaSyncProtocol && PcaSyncProtocol.syncBlockEntityToClient(this)) {
-            ModInfo.LOGGER.debug("update DispenserBlockEntity: {}", this.pos);
+            Main.LOGGER.debug("update DispenserBlockEntity: {}", this.pos);
         }
     }
 }

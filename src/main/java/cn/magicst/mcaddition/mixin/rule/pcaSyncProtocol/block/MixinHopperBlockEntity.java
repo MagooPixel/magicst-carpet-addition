@@ -1,8 +1,8 @@
 package cn.magicst.mcaddition.mixin.rule.pcaSyncProtocol.block;
 
-import cn.magicst.carpet.ModInfo;
-import cn.magicst.carpet.PcaSettings;
-import cn.magicst.carpet.network.PcaSyncProtocol;
+import cn.magicst.mcaddition.Main;
+import cn.magicst.mcaddition.PcaSettings;
+import cn.magicst.mcaddition.network.PcaSyncProtocol;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.Hopper;
@@ -20,22 +20,22 @@ import java.util.function.BooleanSupplier;
 @Mixin(HopperBlockEntity.class)
 public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntity implements Hopper {
 
-    protected MixinHopperBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
-        super(blockEntityType, blockPos, blockState);
-    }
+	protected MixinHopperBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
+		super(blockEntityType, blockPos, blockState);
+	}
 
-    @Inject(method = "insertAndExtract", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity;markDirty(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V"))
-    private static void onInsertAndExtract(World world, BlockPos pos, BlockState state, HopperBlockEntity blockEntity, BooleanSupplier booleanSupplier, CallbackInfoReturnable<Boolean> cir) {
-        if (PcaSettings.pcaSyncProtocol && PcaSyncProtocol.syncBlockEntityToClient(blockEntity)) {
-            ModInfo.LOGGER.debug("update HopperBlockEntity: {}", pos);
-        }
-    }
+	@Inject(method = "insertAndExtract", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity;markDirty(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V"))
+	private static void onInsertAndExtract(World world, BlockPos pos, BlockState state, HopperBlockEntity blockEntity, BooleanSupplier booleanSupplier, CallbackInfoReturnable<Boolean> cir) {
+		if (PcaSettings.pcaSyncProtocol && PcaSyncProtocol.syncBlockEntityToClient(blockEntity)) {
+			Main.LOGGER.debug("update HopperBlockEntity: {}", pos);
+		}
+	}
 
-    @Override
-    public void markDirty() {
-        super.markDirty();
-        if (PcaSettings.pcaSyncProtocol && PcaSyncProtocol.syncBlockEntityToClient(this)) {
-            ModInfo.LOGGER.debug("update HopperBlockEntity: {}", this.pos);
-        }
-    }
+	@Override
+	public void markDirty() {
+		super.markDirty();
+		if (PcaSettings.pcaSyncProtocol && PcaSyncProtocol.syncBlockEntityToClient(this)) {
+			Main.LOGGER.debug("update HopperBlockEntity: {}", this.pos);
+		}
+	}
 }
