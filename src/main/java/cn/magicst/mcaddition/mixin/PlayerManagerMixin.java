@@ -14,14 +14,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerManager.class)
-public abstract class PlayerManagerMixin
-{
-    @Shadow @Final private MinecraftServer server;
-
-    // fabric api ServerPlayConnectionEvents.JOIN
-    @Inject(method = "onPlayerConnect", at = @At("TAIL"))
-    private void handleDisconnection(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci)
-    {
-        PcaSyncProtocol.onJoin(player.networkHandler, new PacketSender(), this.server);
-    }
+public abstract class PlayerManagerMixin {
+	@Shadow
+	@Final
+	private MinecraftServer server;
+	// fabric api ServerPlayConnectionEvents.JOIN
+	@Inject(method = "onPlayerConnect", at = @At("TAIL"))
+	private void handleDisconnection(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) {
+		PcaSyncProtocol.onJoin(player.networkHandler, new PacketSender(), this.server);
+	}
 }
