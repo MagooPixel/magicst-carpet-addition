@@ -81,6 +81,7 @@ public class PcaSyncProtocol {
     // 通知客户端更新 Entity
     // 包内包含 World 的 Identifier, entityId, entity 的 nbt 数据
     // 传输 World 是为了通知客户端该 Entity 属于哪个 World
+	// 在 Quilt 中, 将 getEntityWorld 改为 getWorld
     public static void updateEntity(@NotNull ServerPlayerEntity player, @NotNull Entity entity) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeIdentifier(entity.getWorld().getRegistryKey().getValue());
@@ -93,7 +94,8 @@ public class PcaSyncProtocol {
     // 包内包含 World 的 Identifier, pos, blockEntity 的 nbt 数据
     // 传输 World 是为了通知客户端该 BlockEntity 属于哪个世界
     public static void updateBlockEntity(@NotNull ServerPlayerEntity player, @NotNull BlockEntity blockEntity) {
-        World world = blockEntity.getWorld();
+		// 在 Quilt 中, 将 getEntityWorld 改为 getWorld
+		World world = blockEntity.getWorld();
 
         // 在生成世界时可能会产生空指针
         if (world == null) {
@@ -103,7 +105,8 @@ public class PcaSyncProtocol {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeIdentifier(world.getRegistryKey().getValue());
         buf.writeBlockPos(blockEntity.getPos());
-        buf.writeNbt(blockEntity.createFromNbt());
+		// 在 Quilt 中, 将 createNbt 改为 toNBT (大概吧 错了再改
+        buf.writeNbt(blockEntity.toNbt());
         ServerPlayNetworking.send(player, UPDATE_BLOCK_ENTITY, buf);
     }
 
@@ -225,7 +228,7 @@ public class PcaSyncProtocol {
 			Main.LOGGER.debug("{} watch entity {}: {}", player.getName().getString(), entityId, entity);
             updateEntity(player, entity);
 
-            Pair<Identifier, Entity> pair = new ImmutablePair<>(entity.getEntityWorld().getRegistryKey().getValue(), entity);
+            Pair<Identifier, Entity> pair = new ImmutablePair<>(entity.getWorld().getRegistryKey().getValue(), entity);
             lock.lock();
             playerWatchEntity.put(player, pair);
             if (!entityWatchPlayerSet.containsKey(pair)) {
@@ -254,7 +257,7 @@ public class PcaSyncProtocol {
 
     // 工具
     private static @Nullable Set<ServerPlayerEntity> getWatchPlayerList(@NotNull Entity entity) {
-        return entityWatchPlayerSet.get(getIdentifierEntityPair(entity.getEntityWorld().getRegistryKey().getValue(), entity));
+        return entityWatchPlayerSet.get(getIdentifierEntityPair(entity.getWorld().getRegistryKey().getValue(), entity));
     }
 
     private static @Nullable Set<ServerPlayerEntity> getWatchPlayerList(@NotNull World world, @NotNull BlockPos blockPos) {
@@ -262,7 +265,7 @@ public class PcaSyncProtocol {
     }
 
     public static boolean syncEntityToClient(@NotNull Entity entity) {
-        if (entity.world().isClient()) {
+        if (entity.getWorld().isClient()) {
             return false;
         }
         lock.lock();
