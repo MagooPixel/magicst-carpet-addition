@@ -36,5 +36,6 @@
 			}
 		]
 	},
-	"mixin": "example_mod.mixins.json"
+	"accessWidener": "pca.accesswidener",
+	"mixin": "mcaddition.mixins.json"
 }
