@@ -46,4 +46,10 @@ public abstract class ServerPlayNetworkHandlerMixin {
 			PcaSyncProtocol.cancelSyncEntityHandler(server, player, handler, buf, sender);
 		}
 	}
+	// Quilt-Fabric api ServerPlayConnectionEvents.DISCONNECT
+	@Inject(method = "onDisconnected",at=@At("HEAD"))
+	private void handleDisconnection(CallbackInfo ci)
+	{
+		PcaSyncProtocol.onDisconnect((ServerPlayNetworkHandler)(Object)this, this.server);
+	}
 }

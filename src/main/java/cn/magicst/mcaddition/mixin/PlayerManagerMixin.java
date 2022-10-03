@@ -18,7 +18,7 @@ public abstract class PlayerManagerMixin {
 	@Shadow
 	@Final
 	private MinecraftServer server;
-	// fabric api ServerPlayConnectionEvents.JOIN
+	// quilt-fabric api ServerPlayConnectionEvents.JOIN
 	@Inject(method = "onPlayerConnect", at = @At("TAIL"))
 	private void handleDisconnection(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) {
 		PcaSyncProtocol.onJoin(player.networkHandler, new PacketSender(), this.server);
