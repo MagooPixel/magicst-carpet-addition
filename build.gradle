@@ -25,10 +25,21 @@ dependencies {
 	}
 	modImplementation libs.quilt.loader
 
+	// fabric-carpet
+	modImplementation("curse.maven:carpet-349239:${project.carpet_core_version}")
+
 	// QSL is not a complete API; You will need Quilted Fabric API to fill in the gaps.
 	// Quilted Fabric API will automatically pull in the correct QSL version.
 	modImplementation libs.quilted.fabric.api
 	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one
+	modImplementation("net.earthcomputer.multiconnect:multiconnect-api:${project.multiconnect_version}") {
+		transitive = false
+	}
+	include("net.earthcomputer.multiconnect:multiconnect-api:${project.multiconnect_version}")
+}
+
+loom {
+	accessWidenerPath.set(file("src/main/resources/pca.accesswidener"))
 }
 
 processResources {
