@@ -1,6 +1,6 @@
 package cn.magicst.mcaddition.util;
 
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
+import net.fabricmc.loader.api.FabricLoader;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -9,7 +9,7 @@ public class CarpetHelper {
 	private static final String FABRIC_CARPET_MOD_ID = "carpet";
 
 	public static Optional<Object> getCarpetRule(String ruleName) {
-		if (!QuiltLoaderImpl.INSTANCE.isModLoaded(FABRIC_CARPET_MOD_ID)) {
+		if (!FabricLoader.getInstance().isModLoaded(FABRIC_CARPET_MOD_ID)) {
 			return Optional.empty();
 		}
 		try {

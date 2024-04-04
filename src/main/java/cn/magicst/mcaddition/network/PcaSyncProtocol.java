@@ -30,33 +30,38 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-// main class don't touch this!
+@SuppressWarnings("unused")
 public class PcaSyncProtocol {
+
+    public static final List<Identifier> ALL_PACKET_IDS = Lists.newArrayList();
 
     public static final ReentrantLock lock = new ReentrantLock(true);
     public static final ReentrantLock pairLock = new ReentrantLock(true);
     // 发送包
-    private static final Identifier ENABLE_PCA_SYNC_PROTOCOL = Main.id("enable_pca_sync_protocol");
-    private static final Identifier DISABLE_PCA_SYNC_PROTOCOL = Main.id("disable_pca_sync_protocol");
-    private static final Identifier UPDATE_ENTITY = Main.id("update_entity");
-    private static final Identifier UPDATE_BLOCK_ENTITY = Main.id("update_block_entity");
+    private static final Identifier ENABLE_PCA_SYNC_PROTOCOL = newId("enable_pca_sync_protocol");
+    private static final Identifier DISABLE_PCA_SYNC_PROTOCOL = newId("disable_pca_sync_protocol");
+    private static final Identifier UPDATE_ENTITY = newId("update_entity");
+    private static final Identifier UPDATE_BLOCK_ENTITY = newId("update_block_entity");
     // 响应包
-    public static final Identifier SYNC_BLOCK_ENTITY = Main.id("sync_block_entity");
-    public static final Identifier SYNC_ENTITY = Main.id("sync_entity");
-    public static final Identifier CANCEL_SYNC_BLOCK_ENTITY = Main.id("cancel_sync_block_entity");
-    public static final Identifier CANCEL_SYNC_ENTITY = Main.id("cancel_sync_entity");
+    public static final Identifier SYNC_BLOCK_ENTITY = newId("sync_block_entity");
+    public static final Identifier SYNC_ENTITY = newId("sync_entity");
+    public static final Identifier CANCEL_SYNC_BLOCK_ENTITY = newId("cancel_sync_block_entity");
+    public static final Identifier CANCEL_SYNC_ENTITY = newId("cancel_sync_entity");
     private static final Map<ServerPlayerEntity, Pair<Identifier, BlockPos>> playerWatchBlockPos = new HashMap<>();
     private static final Map<ServerPlayerEntity, Pair<Identifier, Entity>> playerWatchEntity = new HashMap<>();
     private static final Map<Pair<Identifier, BlockPos>, Set<ServerPlayerEntity>> blockPosWatchPlayerSet = new HashMap<>();
     private static final Map<Pair<Identifier, Entity>, Set<ServerPlayerEntity>> entityWatchPlayerSet = new HashMap<>();
     private static final MutablePair<Identifier, Entity> identifierEntityPair = new MutablePair<>();
     private static final MutablePair<Identifier, BlockPos> identifierBlockPosPair = new MutablePair<>();
+
+    private static Identifier newId(String path) {
+        var id = ModInfo.id(path);
+        ALL_PACKET_IDS.add(id);
+        return id;
+    }
 
     // 通知客户端服务器已启用 PcaSyncProtocol
     public static void enablePcaSyncProtocol(@NotNull ServerPlayerEntity player) {
@@ -84,7 +89,7 @@ public class PcaSyncProtocol {
 	// 在 Quilt 中, 将 getEntityWorld 改为 getWorld
     public static void updateEntity(@NotNull ServerPlayerEntity player, @NotNull Entity entity) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeIdentifier(entity.getWorld().getRegistryKey().getValue());
+        buf.writeIdentifier(entity.getEntityWorld().getRegistryKey().getValue());
         buf.writeInt(entity.getId());
         buf.writeNbt(entity.writeNbt(new NbtCompound()));
         ServerPlayNetworking.send(player, UPDATE_ENTITY, buf);
@@ -105,8 +110,7 @@ public class PcaSyncProtocol {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeIdentifier(world.getRegistryKey().getValue());
         buf.writeBlockPos(blockEntity.getPos());
-		// 在 Quilt 中, 将 createNbt 改为 toNBT (大概吧 错了再改
-        buf.writeNbt(blockEntity.toNbt());
+        buf.writeNbt(blockEntity.createNbt());
         ServerPlayNetworking.send(player, UPDATE_BLOCK_ENTITY, buf);
     }
 
@@ -164,7 +168,7 @@ public class PcaSyncProtocol {
             return;
         }
         BlockPos pos = buf.readBlockPos();
-        ServerWorld world = player.getWorld();
+        ServerWorld world = player.getServerWorld();
         BlockState blockState = world.getBlockState(pos);
         clearPlayerWatchData(player);
 		Main.LOGGER.debug("{} watch blockpos {}: {}", player.getName().getString(), pos, blockState);
@@ -199,7 +203,7 @@ public class PcaSyncProtocol {
             updateBlockEntity(player, blockEntity);
         }
 
-        Pair<Identifier, BlockPos> pair = new ImmutablePair<>(player.getWorld().getRegistryKey().getValue(), pos);
+        Pair<Identifier, BlockPos> pair = new ImmutablePair<>(player.getEntityWorld().getRegistryKey().getValue(), pos);
         lock.lock();
         playerWatchBlockPos.put(player, pair);
         if (!blockPosWatchPlayerSet.containsKey(pair)) {
@@ -219,7 +223,7 @@ public class PcaSyncProtocol {
             return;
         }
         int entityId = buf.readInt();
-        ServerWorld world = player.getWorld();
+        ServerWorld world = player.getServerWorld();
         Entity entity = world.getEntityById(entityId);
         if (entity == null) {
 			Main.LOGGER.debug("Can't find entity {}.", entityId);
@@ -228,7 +232,7 @@ public class PcaSyncProtocol {
 			Main.LOGGER.debug("{} watch entity {}: {}", player.getName().getString(), entityId, entity);
             updateEntity(player, entity);
 
-            Pair<Identifier, Entity> pair = new ImmutablePair<>(entity.getWorld().getRegistryKey().getValue(), entity);
+            Pair<Identifier, Entity> pair = new ImmutablePair<>(entity.getEntityWorld().getRegistryKey().getValue(), entity);
             lock.lock();
             playerWatchEntity.put(player, pair);
             if (!entityWatchPlayerSet.containsKey(pair)) {
@@ -257,7 +261,7 @@ public class PcaSyncProtocol {
 
     // 工具
     private static @Nullable Set<ServerPlayerEntity> getWatchPlayerList(@NotNull Entity entity) {
-        return entityWatchPlayerSet.get(getIdentifierEntityPair(entity.getWorld().getRegistryKey().getValue(), entity));
+        return entityWatchPlayerSet.get(getIdentifierEntityPair(entity.getEntityWorld().getRegistryKey().getValue(), entity));
     }
 
     private static @Nullable Set<ServerPlayerEntity> getWatchPlayerList(@NotNull World world, @NotNull BlockPos blockPos) {
@@ -265,7 +269,7 @@ public class PcaSyncProtocol {
     }
 
     public static boolean syncEntityToClient(@NotNull Entity entity) {
-        if (entity.getWorld().isClient()) {
+        if (entity.getEntityWorld().isClient()) {
             return false;
         }
         lock.lock();

@@ -3,8 +3,9 @@ package cn.magicst.mcaddition.mixin;
 import cn.magicst.mcaddition.fakefqapi.PacketSender;
 import cn.magicst.mcaddition.network.PcaSyncProtocol;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
+import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -15,23 +16,21 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerPlayNetworkHandler.class)
+@Mixin(ServerCommonNetworkHandler.class)
 public abstract class ServerPlayNetworkHandlerMixin {
 	@Shadow
 	@Final
-	private MinecraftServer server;
+	protected MinecraftServer server;
 
-	@Shadow
-	public ServerPlayerEntity player;
-
-	@Inject(method = "onCustomPayload", at = @At("HEAD"))
-	private void pcaProtocol(CustomPayloadC2SPacket packet, CallbackInfo ci) {
-		Identifier identifier = packet.getChannel();
-		MinecraftServer server = this.server;
-		ServerPlayerEntity player = this.player;
-		ServerPlayNetworkHandler handler = (ServerPlayNetworkHandler) (Object) this;
-		PacketByteBuf buf = packet.getData();
-		PacketSender sender = new PacketSender();
+    @Inject(method = "onCustomPayload", at = @At("HEAD"))
+    private void pcaProtocol(CustomPayloadC2SPacket packet, CallbackInfo ci) {
+        var self = (ServerCommonNetworkHandler)(Object)this;
+        if (packet.payload() instanceof PcaCustomPayload payload && self instanceof ServerPlayNetworkHandler handler) {
+            Identifier identifier = payload.id();
+            MinecraftServer server = this.server;
+            ServerPlayerEntity player = handler.getPlayer();
+            PacketByteBuf buf = payload.buf();
+            PacketSender sender = new PacketSender();
 
 		if (identifier.equals(PcaSyncProtocol.SYNC_BLOCK_ENTITY)) {
 			PcaSyncProtocol.syncBlockEntityHandler(server, player, handler, buf, sender);
@@ -47,9 +46,11 @@ public abstract class ServerPlayNetworkHandlerMixin {
 		}
 	}
 	// Quilt-Fabric api ServerPlayConnectionEvents.DISCONNECT
-	@Inject(method = "onDisconnected",at=@At("HEAD"))
-	private void handleDisconnection(CallbackInfo ci)
-	{
-		PcaSyncProtocol.onDisconnect((ServerPlayNetworkHandler)(Object)this, this.server);
-	}
+    @Inject(method = "onDisconnected", at = @At("HEAD"))
+    private void handleDisconnection(CallbackInfo ci) {
+        var self = (ServerCommonNetworkHandler)(Object)this;
+        if (self instanceof ServerPlayNetworkHandler handler) {
+            PcaSyncProtocol.onDisconnect(handler, this.server);
+        }
+    }
 }

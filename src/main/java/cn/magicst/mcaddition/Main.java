@@ -1,7 +1,7 @@
 package cn.magicst.mcaddition;
 
-import org.quiltmc.loader.api.ModContainer;
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,8 +15,8 @@ public class Main {
 	public static String MOD_VERSION;
 
 	static {
-		Optional<ModContainer> modContainerOptional = QuiltLoaderImpl.INSTANCE.getModContainer(MOD_ID);
-		modContainerOptional.ifPresent(modContainer -> MOD_VERSION = modContainer.metadata().version().toString());
+		Optional<ModContainer> modContainerOptional = FabricLoader.getInstance().getModContainer(MOD_ID);
+		modContainerOptional.ifPresent(modContainer -> MOD_VERSION = modContainer.getMetadata().getVersion().getFriendlyString());
 	}
 
 	public static Identifier id(String path) {

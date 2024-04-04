@@ -4,6 +4,7 @@
 	"package": "cn.magicst.mcaddition.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
+      "CustomPayloadC2SPacketMixin",
       "MinecraftServerMixin",
       "PlayerManagerMixin",
       "ServerPlayNetworkHandlerMixin",
