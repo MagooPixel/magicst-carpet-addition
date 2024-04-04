@@ -1,8 +1,8 @@
 package cn.magicst.mcaddition.mixin;
 
 import com.google.common.collect.ImmutableMap;
-import cn.magicst.mcaddition.PcaCustomPayload;
-import cn.magicst.mcaddition.PcaSyncProtocol;
+import cn.magicst.mcaddition.network.PcaCustomPayload;
+import cn.magicst.mcaddition.network.PcaSyncProtocol;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
